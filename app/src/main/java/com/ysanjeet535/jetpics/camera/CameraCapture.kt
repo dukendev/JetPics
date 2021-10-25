@@ -37,82 +37,79 @@ import java.io.File
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 
-//@ExperimentalPermissionsApi
-//@ExperimentalCoroutinesApi
-//@Composable
-//fun CameraCapture(
-//    modifier: Modifier = Modifier,
-//    cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA,
-//    onImageFile: (File) -> Unit = { }
-//) {
-//    val context = LocalContext.current
-//    Permission(
-//        permission = Manifest.permission.CAMERA,
-//        rationale = "You said you wanted a picture, so I'm going to have to ask for permission.",
-//        permissionNotAvailableContent = {
-//            Column(modifier) {
-//                Text("O noes! No Camera!")
-//                Spacer(modifier = Modifier.height(8.dp))
-//                Button(
-//                    onClick = {
-//                        context.startActivity(
-//                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-//                                data = Uri.fromParts("package", context.packageName, null)
-//                            }
-//                        )
-//                    }
-//                ) {
-//                    Text("Open Settings")
-//                }
-//            }
-//        }
-//    ) {
-//        Box(modifier = modifier) {
-//            val lifecycleOwner = LocalLifecycleOwner.current
-//            val coroutineScope = rememberCoroutineScope()
-//            var previewUseCase by remember { mutableStateOf<UseCase>(Preview.Builder().build()) }
-//            val imageCaptureUseCase by remember {
-//                mutableStateOf(
-//                    ImageCapture.Builder()
-//                        .setCaptureMode(CAPTURE_MODE_MAXIMIZE_QUALITY)
-//                        .build()
-//                )
-//            }
-//            Box {
-//                CameraPreview(
-//                    modifier = Modifier.fillMaxSize(),
-//                    onUseCase = {
-//                        previewUseCase = it
-//                    }
-//                )
-//                Button(
-//                    modifier = Modifier
-//                        .wrapContentSize()
-//                        .padding(16.dp)
-//                        .align(Alignment.BottomCenter),
-//                    onClick = {
-//                        coroutineScope.launch {
-//                            imageCaptureUseCase.takePicture(context.executor).let {
-//                                onImageFile(it)
-//                            }
-//                        }
-//                    }
-//                ) {
-//                    Text("Click!")
-//                }
-//            }
-//            LaunchedEffect(previewUseCase) {
-//                val cameraProvider = context.getCameraProvider()
-//                try {
-//                    // Must unbind the use-cases before rebinding them.
-//                    cameraProvider.unbindAll()
-//                    cameraProvider.bindToLifecycle(
-//                        lifecycleOwner, cameraSelector, previewUseCase, imageCaptureUseCase
-//                    )
-//                } catch (ex: Exception) {
-//                    Log.e("CameraCapture", "Failed to bind camera use cases", ex)
-//                }
-//            }
-//        }
-//    }
-//}
+
+
+@ExperimentalPermissionsApi
+@Composable
+fun CameraCapture(
+    modifier: Modifier = Modifier,
+    cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA,
+    onImageFile: (File) -> Unit = { }
+) {
+    val context = LocalContext.current
+    Permission(
+        permission = Manifest.permission.CAMERA,
+        rationale = "You said you wanted a picture, so I'm going to have to ask for permission.",
+        permissionNotAvailableContent = {
+            Column(modifier) {
+                Text("O noes! No Camera!")
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = {
+                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    })
+                }) {
+                    Text("Open Settings")
+                }
+            }
+        }
+    ) {
+        Box(modifier = modifier) {
+            val lifecycleOwner = LocalLifecycleOwner.current
+            val coroutineScope = rememberCoroutineScope()
+            var previewUseCase by remember { mutableStateOf<UseCase>(Preview.Builder().build()) }
+            val imageCaptureUseCase by remember {
+                mutableStateOf(
+                    ImageCapture.Builder()
+                        .setCaptureMode(CAPTURE_MODE_MAXIMIZE_QUALITY)
+                        .build()
+                )
+            }
+            Box {
+                CameraPreview(
+                    modifier = Modifier.fillMaxSize(),
+                    onUseCase = {
+                        previewUseCase = it
+                    }
+                )
+                Button(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(16.dp)
+                        .align(Alignment.BottomCenter),
+                    onClick = {
+                        coroutineScope.launch {
+                            imageCaptureUseCase.takePicture(context.executor).let {
+                                onImageFile(it)
+                            }
+                        }
+                    }
+                ) {
+                    Text("Click!")
+                }
+            }
+            LaunchedEffect(previewUseCase) {
+                val cameraProvider = context.getCameraProvider()
+                try {
+                    // Must unbind the use-cases before rebinding them.
+                    cameraProvider.unbindAll()
+                    cameraProvider.bindToLifecycle(
+                        lifecycleOwner, cameraSelector, previewUseCase, imageCaptureUseCase
+                    )
+                } catch (ex: Exception) {
+                    Log.e("CameraCapture", "Failed to bind camera use cases", ex)
+                }
+            }
+        }
+    }
+}
